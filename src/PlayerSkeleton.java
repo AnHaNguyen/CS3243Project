@@ -1,3 +1,4 @@
+import java.io.*;
 
 public class PlayerSkeleton {
 	public static final int COLS = 10;
@@ -35,6 +36,7 @@ public class PlayerSkeleton {
 			}
 		}
 		System.out.println("You have completed "+s.getRowsCleared()+" rows.");
+		
 	}
 
 	/*heuristics function taken from:
@@ -69,6 +71,7 @@ public class PlayerSkeleton {
 		int[] pBottom = State.getpBottom()[nextPiece][orient];
 		int pWidth = State.getpWidth()[nextPiece][orient];
 		int[] pTop = State.getpTop()[nextPiece][orient];
+		int pHeight = State.getpHeight()[nextPiece][orient];
 		
 		int h = getHeight(slot,field) - pBottom[0];
 		
@@ -76,13 +79,14 @@ public class PlayerSkeleton {
 			h = Math.max(h, getHeight(slot+i,field)- pBottom[i]);
 		}
 		
+		if (h + pHeight >= ROWS){ //if leads to game end -> last resort
+			return -1000;
+		}
+		
 		for (int i = slot; i < slot + pWidth; i++){		
 			int start = h + pBottom[i-slot];
 			
 			for (int j = 0; j < pTop[i-slot] - pBottom[i-slot]; j++){
-				if (start + j >= ROWS){	//if leads to game end -> last resort
-					return -1000;
-				}
 				field[start+j][i] = 1;
 			}
 		}
