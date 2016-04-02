@@ -4,15 +4,16 @@ import java.util.Random;
 
 public class TetrisMiner {
     private static final int MAX_COEFFICIENT_VALUE = 1000;
-    private static final int DIFF_COEFFICIENT_VALUE = 50;
+    private static final int DIFF_COEFFICIENT_VALUE = 200;
     private static final int GAMES = 100;
+    private static Random rd;
+    private static GameJudge judge;
     
     public static void main(String[] args) {
-        Random rd = new Random();
-        GameJudge judge = new GameJudge(GameJudge.JUDGE_BY_MIN);
+        rd = new Random();
+        judge = new GameJudge(GameJudge.JUDGE_BY_MIN);
         
         int[] coeff = {422, 928, 28, 230,  7};
-        int numCoefficients = coeff.length;
         
         int a = coeff[0];
         int b = coeff[1];
@@ -27,6 +28,11 @@ public class TetrisMiner {
         System.out.printf("Average of %2d, %2d, %2d, %2d, %2d is %6.2f (%d %d)\n", a,b,c,d,e, average, minScore, maxScore);
         judge.saveCurrentScore();
         
+        localSearch(coeff);
+    }
+
+    private static void localSearch(int[] coeff) {
+        int numCoefficients = coeff.length;
         while (true) {
             int[] oldValues = new int[numCoefficients];
             for(int i=0;i<numCoefficients;i++) {
@@ -36,11 +42,11 @@ public class TetrisMiner {
                 coeff[i] = Math.min(coeff[i], MAX_COEFFICIENT_VALUE);
             }
             
-            a = coeff[0];
-            b = coeff[1];
-            c = coeff[2];
-            d = coeff[3];
-            e = coeff[4];
+            int a = coeff[0];
+            int b = coeff[1];
+            int c = coeff[2];
+            int d = coeff[3];
+            int e = coeff[4];
             
             judge.clearCurrentScore();
             for(int i=0;i<GAMES;i++) {
@@ -50,9 +56,9 @@ public class TetrisMiner {
             
             if (judge.isCurrentBetter()) {
                 System.out.printf(" (%2d, %2d, %2d, %2d, %2d)\n", a,b,c,d,e);
-                average = judge.getAverage();
-                minScore = judge.getMinScore();
-                maxScore = judge.getMaxScore();
+                double average = judge.getAverage();
+                int minScore = judge.getMinScore();
+                int maxScore = judge.getMaxScore();
                 System.out.printf("Average of %2d, %2d, %2d, %2d, %2d is %6.2f (%d %d)\n", a,b,c,d,e, average, minScore, maxScore);
                 judge.saveCurrentScore();
             } else {

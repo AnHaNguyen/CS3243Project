@@ -1,7 +1,7 @@
 
 
 public class PlayerSkeleton {
-    private static final boolean SLOW_MODE = true; // set this to false to play fast
+    private static final boolean SLOW_MODE = false; // set this to false to play fast
     private static final int SLEEP_TIME = 100;
     private static final int END_GAME = -1000000;
     private static final int COLS = 10;
@@ -91,7 +91,7 @@ public class PlayerSkeleton {
                      - sumHeightCoefficient * sumHeight 
                      - holesEfficient * holes 
                      - heightDiffCoefficient * heightDiff 
-                     - bricksOnHolesCoefficient*bricksOnHoles;
+                     - bricksOnHolesCoefficient * bricksOnHoles;
         return hrt;
     }
     
