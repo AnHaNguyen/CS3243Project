@@ -2,16 +2,26 @@
 
 public class PlayerSkeleton {
     private static final boolean SLOW_MODE = false; // set this to false to play fast
-    private static final int SLEEP_TIME = 100;
+    private static final int SLEEP_TIME = 300;
     private static final int END_GAME = -1000000;
     private static final int COLS = 10;
     private static final int ROWS = 21;
-
-    private static double sumHeightCoefficient;
-    private static double completeLinesCoefficient;
-    private static double holesEfficient;
-    private static double heightDiffCoefficient;
-    private static double bricksOnHolesCoefficient;
+    
+    public static int COMPLETE_LINES = 0;
+    public static int SUM_HEIGHT = 1;
+    public static int MAX_HEIGHT = 2;
+    public static int HEIGHT_DIFF = 3;
+    public static int HOLES = 4;
+    public static int BRICKS_ON_HOLES = 5;
+    public static int FLAT_PLACE = 6;
+    
+    private static int completeLinesCoefficient;
+    private static int sumHeightCoefficient;
+    private static int maxHeightCoefficient;
+    private static int heightDiffCoefficient;
+    private static int holesEfficient;
+    private static int bricksOnHolesCoefficient;
+    private static int flatPlaceCoefficient;
     
     //implement this function to have a working system
     public int pickMove(State s, int[][] legalMoves) {
@@ -30,26 +40,24 @@ public class PlayerSkeleton {
         return bestMove;
     }
     
-    public PlayerSkeleton(double completeLinesCoefficientParam, double sumHeightCoefficientParam, 
-                          double holesEfficientParam, double heightDiffCoefficientParam, 
-                          double bricksOnHolesCoefficientParam) {
-        completeLinesCoefficient = completeLinesCoefficientParam;
-        sumHeightCoefficient = sumHeightCoefficientParam;
-        holesEfficient = holesEfficientParam;
-        heightDiffCoefficient = heightDiffCoefficientParam;
-        bricksOnHolesCoefficient = bricksOnHolesCoefficientParam;
+    public PlayerSkeleton(int[] coefficients) {
+        completeLinesCoefficient = coefficients[COMPLETE_LINES];
+        sumHeightCoefficient = coefficients[SUM_HEIGHT];
+        maxHeightCoefficient = coefficients[MAX_HEIGHT];
+        heightDiffCoefficient = coefficients[HEIGHT_DIFF];
+        holesEfficient = coefficients[HOLES];
+        bricksOnHolesCoefficient = coefficients[BRICKS_ON_HOLES];
+        flatPlaceCoefficient = coefficients[FLAT_PLACE];
     }
     
+    private static int[] defaultValues = {105,  -152,     1,   -48,   -18,    -2,   -27};
+    // Default Values 105,  -152,     1,   -48,   -18,    -2,   -27
+    // Average Score: 1638.15 in 100 games 
+    // Minimum Score: 111
+    // Maximum Score: 8229
+
     public PlayerSkeleton() {
-        // Default Values 422, 928, 28, 230,  7
-        // Average Score: 1279.51 in 100 games 
-        // Minimum Score: 68
-        // Maximum Score: 6509
-        completeLinesCoefficient = 422;
-        sumHeightCoefficient = 928;
-        holesEfficient = 28;
-        heightDiffCoefficient = 230;
-        bricksOnHolesCoefficient = 7;
+        this(defaultValues);
     }
     
     public static void main(String[] args) {
@@ -58,6 +66,7 @@ public class PlayerSkeleton {
         PlayerSkeleton p = new PlayerSkeleton();
         while(!s.hasLost()) {
             s.makeMove(p.pickMove(s,s.legalMoves()));
+            System.out.println(s.getRowsCleared());
             s.draw();
             s.drawNext(0,0);
             try {
@@ -81,20 +90,38 @@ public class PlayerSkeleton {
         
         //calculate heuristics values
         int sumHeight = getSumHeight(field);
+        int maxHeight = getMaxHeight(field);
         int heightDiff = getHeightDiff(field);
         int completeLines = getCompleteLines(field);
         int holes = getHoles(field);
         int bricksOnHoles = getBricksOnHoles(field);
+        int flatPlaces = getFlatPlaces(field);
         //System.out.println(sumHeight + " " + completeLines + " " + holes + " " + heightDiff);
         
         double hrt = completeLinesCoefficient * completeLines 
-                     - sumHeightCoefficient * sumHeight 
-                     - holesEfficient * holes 
-                     - heightDiffCoefficient * heightDiff 
-                     - bricksOnHolesCoefficient * bricksOnHoles;
+                     + sumHeightCoefficient * sumHeight 
+                     + maxHeightCoefficient * maxHeight 
+                     + holesEfficient * holes 
+                     + heightDiffCoefficient * heightDiff 
+                     + bricksOnHolesCoefficient * bricksOnHoles
+                     + flatPlaceCoefficient * flatPlaces;
         return hrt;
     }
     
+    private static int getFlatPlaces(int[][] field) {
+        int heightFlat = 0;
+        int[] heights = new int[COLS];
+        for (int i = 0; i < COLS; i++) heights[i] = getHeight(i, field);
+        for (int i = 0; i < COLS - 1; i++) if (heights[i] == heights[i+1]) heightFlat++;
+        return heightFlat;
+    }
+
+    private static int getMaxHeight(int[][] field) {
+        int maxHeight = 0;
+        for (int i = 0; i < COLS; i++) maxHeight = Math.max(maxHeight, getHeight(i, field));
+        return maxHeight;
+    }
+
     private static int getBricksOnHoles(int[][] field) {
         int bricksOnHoles = 0;
         for (int i = 0; i < COLS; i++) {

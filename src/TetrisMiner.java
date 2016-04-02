@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class TetrisMiner {
     private static final int MAX_COEFFICIENT_VALUE = 1000;
-    private static final int DIFF_COEFFICIENT_VALUE = 200;
+    private static final int DIFF_COEFFICIENT_VALUE = 50;
     private static final int GAMES = 100;
     private static Random rd;
     private static GameJudge judge;
@@ -13,19 +13,15 @@ public class TetrisMiner {
         rd = new Random();
         judge = new GameJudge(GameJudge.JUDGE_BY_MIN);
         
-        int[] coeff = {422, 928, 28, 230,  7};
+        //int[] coeff = {105,  -152,     1,   -48,   -18,    -2,   -27};
+        int[] coeff = {0, 0, 0, 0, 0, 0, 0};
         
-        int a = coeff[0];
-        int b = coeff[1];
-        int c = coeff[2];
-        int d = coeff[3];
-        int e = coeff[4];
-        
-        for(int i=0;i<GAMES;i++) judge.addScore(playGame(a,b,c,d,e));
+        for(int i=0;i<GAMES;i++) judge.addScore(playGame(coeff));
         double average = judge.getAverage();
         int minScore = judge.getMinScore();
         int maxScore = judge.getMaxScore();
-        System.out.printf("Average of %2d, %2d, %2d, %2d, %2d is %6.2f (%d %d)\n", a,b,c,d,e, average, minScore, maxScore);
+        System.out.printf("Average of %5d, %5d, %5d, %5d, %5d, %5d, %5d is %6.2f (%d %d)\n", 
+                coeff[0],coeff[1],coeff[2],coeff[3],coeff[4],coeff[5],coeff[6], average, minScore, maxScore);
         judge.saveCurrentScore();
         
         localSearch(coeff);
@@ -38,44 +34,36 @@ public class TetrisMiner {
             for(int i=0;i<numCoefficients;i++) {
                 oldValues[i] = coeff[i];
                 coeff[i] = (coeff[i] + rd.nextInt(DIFF_COEFFICIENT_VALUE) - DIFF_COEFFICIENT_VALUE/2);
-                coeff[i] = Math.max(coeff[i], 0);
+                coeff[i] = Math.max(coeff[i], -MAX_COEFFICIENT_VALUE);
                 coeff[i] = Math.min(coeff[i], MAX_COEFFICIENT_VALUE);
             }
             
-            int a = coeff[0];
-            int b = coeff[1];
-            int c = coeff[2];
-            int d = coeff[3];
-            int e = coeff[4];
-            
             judge.clearCurrentScore();
             for(int i=0;i<GAMES;i++) {
-                judge.addScore(playGame(a,b,c,d,e));
+                judge.addScore(playGame(coeff));
                 if (judge.canTerminate()) break;
             }
             
             if (judge.isCurrentBetter()) {
-                System.out.printf(" (%2d, %2d, %2d, %2d, %2d)\n", a,b,c,d,e);
+                System.out.printf(" (%5d, %5d, %5d, %5d, %5d, %5d, %5d)\n", coeff[0],coeff[1],coeff[2],coeff[3],coeff[4],coeff[5],coeff[6]);
                 double average = judge.getAverage();
                 int minScore = judge.getMinScore();
                 int maxScore = judge.getMaxScore();
-                System.out.printf("Average of %2d, %2d, %2d, %2d, %2d is %6.2f (%d %d)\n", a,b,c,d,e, average, minScore, maxScore);
+                System.out.printf("Average of %5d, %5d, %5d, %5d, %5d, %5d, %5d is %6.2f (%d %d)\n", 
+                        coeff[0],coeff[1],coeff[2],coeff[3],coeff[4],coeff[5],coeff[6], average, minScore, maxScore);
                 judge.saveCurrentScore();
             } else {
-                System.out.printf(" (%2d, %2d, %2d, %2d, %2d)  Best: (%2d, %2d, %2d, %2d, %2d)\n", a,b,c,d,e,
-                        oldValues[0],oldValues[1],oldValues[2],oldValues[3],oldValues[4]);
+                System.out.printf(" (%5d, %5d, %5d, %5d, %5d, %5d, %5d)  Best: (%5d, %5d, %5d, %5d, %5d, %5d, %5d)\n", 
+                        coeff[0],coeff[1],coeff[2],coeff[3],coeff[4],coeff[5],coeff[6],
+                        oldValues[0],oldValues[1],oldValues[2],oldValues[3],oldValues[4],oldValues[5],oldValues[6]);
                 for(int i=0;i<numCoefficients;i++) coeff[i] = oldValues[i];
             }
         }
     }
 
-    private static int playGame(double completeLinesCoefficientParam, double sumHeightCoefficientParam, 
-                                double holesEfficientParam, double heightDiffCoefficientParam, 
-                                double bricksOnHolesCoefficientParam) {
+    private static int playGame(int[] coefficients) {
         State s = new State();
-        PlayerSkeleton p = new PlayerSkeleton(completeLinesCoefficientParam, sumHeightCoefficientParam,
-                                              holesEfficientParam, heightDiffCoefficientParam, 
-                                              bricksOnHolesCoefficientParam);
+        PlayerSkeleton p = new PlayerSkeleton(coefficients);
         while(!s.hasLost()) s.makeMove(p.pickMove(s,s.legalMoves()));
         return s.getRowsCleared();
     }
