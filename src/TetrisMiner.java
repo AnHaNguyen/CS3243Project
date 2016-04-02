@@ -5,13 +5,13 @@ import java.util.Random;
 public class TetrisMiner {
     private static final int MAX_COEFFICIENT_VALUE = 1000;
     private static final int DIFF_COEFFICIENT_VALUE = 50;
-    private static final int GAMES = 50;
+    private static final int GAMES = 100;
     
     public static void main(String[] args) {
         Random rd = new Random();
         GameJudge judge = new GameJudge(GameJudge.JUDGE_BY_MIN);
         
-        int[] coeff = {422, 955, 48, 246, 48};
+        int[] coeff = {422, 928, 28, 230,  7};
         int numCoefficients = coeff.length;
         
         int a = coeff[0];
@@ -24,7 +24,7 @@ public class TetrisMiner {
         double average = judge.getAverage();
         int minScore = judge.getMinScore();
         int maxScore = judge.getMaxScore();
-        System.out.println(String.format("Average of %2d, %2d, %2d, %2d, %2d is %6.2f (%d %d)", a,b,c,d,e, average, minScore, maxScore));
+        System.out.printf("Average of %2d, %2d, %2d, %2d, %2d is %6.2f (%d %d)\n", a,b,c,d,e, average, minScore, maxScore);
         judge.saveCurrentScore();
         
         while (true) {
@@ -49,22 +49,23 @@ public class TetrisMiner {
             }
             
             if (judge.isCurrentBetter()) {
-                System.out.println(String.format(" (%2d, %2d, %2d, %2d, %2d)", a,b,c,d,e));
+                System.out.printf(" (%2d, %2d, %2d, %2d, %2d)\n", a,b,c,d,e);
                 average = judge.getAverage();
                 minScore = judge.getMinScore();
                 maxScore = judge.getMaxScore();
-                System.out.println(String.format("Average of %2d, %2d, %2d, %2d, %2d is %6.2f (%d %d)", a,b,c,d,e, average, minScore, maxScore));
+                System.out.printf("Average of %2d, %2d, %2d, %2d, %2d is %6.2f (%d %d)\n", a,b,c,d,e, average, minScore, maxScore);
                 judge.saveCurrentScore();
             } else {
-                System.out.println(String.format(" (%2d, %2d, %2d, %2d, %2d)", a,b,c,d,e));
+                System.out.printf(" (%2d, %2d, %2d, %2d, %2d)  Best: (%2d, %2d, %2d, %2d, %2d)\n", a,b,c,d,e,
+                        oldValues[0],oldValues[1],oldValues[2],oldValues[3],oldValues[4]);
                 for(int i=0;i<numCoefficients;i++) coeff[i] = oldValues[i];
             }
         }
     }
 
     private static int playGame(double completeLinesCoefficientParam, double sumHeightCoefficientParam, 
-                                 double holesEfficientParam, double heightDiffCoefficientParam, 
-                                 double bricksOnHolesCoefficientParam) {
+                                double holesEfficientParam, double heightDiffCoefficientParam, 
+                                double bricksOnHolesCoefficientParam) {
         State s = new State();
         PlayerSkeleton p = new PlayerSkeleton(completeLinesCoefficientParam, sumHeightCoefficientParam,
                                               holesEfficientParam, heightDiffCoefficientParam, 
@@ -81,7 +82,6 @@ public class TetrisMiner {
         private List<Integer> preScoreList;
         private List<Integer> scoreList;
         private int preMinScore;
-        private int preMaxScore;
         private double preSum;
         private int curMinScore;
         private int curMaxScore;
@@ -98,7 +98,6 @@ public class TetrisMiner {
             preScoreList.clear();
             preScoreList.addAll(scoreList);
             preMinScore = curMinScore;
-            preMaxScore = curMaxScore;
             preSum = curSum;
         }
         

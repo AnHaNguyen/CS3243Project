@@ -1,12 +1,11 @@
 
 
 public class PlayerSkeleton {
-    private static final boolean SLOW_MODE = false; // set this to false to play fast
-    private static final int SLEEP_TIME = 1000;
+    private static final boolean SLOW_MODE = true; // set this to false to play fast
+    private static final int SLEEP_TIME = 100;
     private static final int END_GAME = -1000000;
     private static final int COLS = 10;
     private static final int ROWS = 21;
-    private static final int N_PIECES = 7;
 
     private static double sumHeightCoefficient;
     private static double completeLinesCoefficient;
@@ -42,14 +41,15 @@ public class PlayerSkeleton {
     }
     
     public PlayerSkeleton() {
-        // Default Values 422, 955, 48, 246, 48
-        // Average Score: ~1000
-        // Maximum Score: 3465
-        completeLinesCoefficient = 1000422;
-        sumHeightCoefficient = 955;
-        holesEfficient = 48;
-        heightDiffCoefficient = 246;
-        bricksOnHolesCoefficient = 48;
+        // Default Values 422, 928, 28, 230,  7
+        // Average Score: 1279.51 in 100 games 
+        // Minimum Score: 68
+        // Maximum Score: 6509
+        completeLinesCoefficient = 422;
+        sumHeightCoefficient = 928;
+        holesEfficient = 28;
+        heightDiffCoefficient = 230;
+        bricksOnHolesCoefficient = 7;
     }
     
     public static void main(String[] args) {
@@ -150,14 +150,8 @@ public class PlayerSkeleton {
     private static int getHeightDiff(int[][] field) {
         int heightDiff = 0;
         int[] heights = new int[COLS];
-        for (int i = 0; i < COLS; i++){
-            heights[i] = getHeight(i, field);
-        }
-        for (int i = 0; i < COLS; i++){
-            if (i < COLS - 1){
-                heightDiff += Math.abs(heights[i] - heights[i+1]);
-            }
-        }
+        for (int i = 0; i < COLS; i++) heights[i] = getHeight(i, field);
+        for (int i = 0; i < COLS - 1; i++) heightDiff += Math.abs(heights[i] - heights[i+1]);
         return heightDiff;
     }
 
@@ -177,10 +171,8 @@ public class PlayerSkeleton {
     }
     
     public static int getHeight(int col, int[][] field){
-        for (int i = ROWS -1; i >= 0; i--){
-            if (field[i][col] != 0){
-                return i+1;
-            }
+        for (int i = ROWS - 1; i >= 0; i--){
+            if (field[i][col] != 0) return i+1;
         }
         return 0;
     }
@@ -204,18 +196,14 @@ public class PlayerSkeleton {
     
     public static int getCompleteLines(int[][] field){
         int lines = 0;
-        boolean full = true;
         for (int i = 0; i < ROWS; i++){
-            full = true;
-            for (int j = 0; j < COLS; j++){
-                if (field[i][j] == 0){
-                    full = false;
-                }
-            }
-            if (full){
-                lines++;
-            }
+            if (isCompleteLine(field[i])) lines++;
         }
         return lines;
+    }
+
+    private static boolean isCompleteLine(int[] row) {
+        for (int j = 0; j < COLS; j++) if (row[j] == 0) return false;
+        return true;
     }
 }
