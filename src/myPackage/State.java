@@ -1,4 +1,7 @@
+package myPackage;
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -8,14 +11,8 @@ public class State {
 	public static final int ROWS = 21;
 	public static final int N_PIECES = 7;
 
-	
-
 	public boolean lost = false;
-	
-	
-	
-
-	
+		
 	public TLabel label;
 	
 	//current turn
@@ -42,11 +39,11 @@ public class State {
 	public static final int SLOT = 1;
 	
 	//possible orientations for a given piece type
-	protected static int[] pOrients = {1,2,4,4,4,2,2};
+	protected final static int[] pOrients = {1,2,4,4,4,2,2};
 	
 	//the next several arrays define the piece vocabulary in detail
 	//width of the pieces [piece ID][orientation]
-	protected static int[][] pWidth = {
+	protected final static int[][] pWidth = {
 			{2},
 			{1,4},
 			{2,3,2,3},
@@ -56,7 +53,7 @@ public class State {
 			{3,2}
 	};
 	//height of the pieces [piece ID][orientation]
-	private static int[][] pHeight = {
+	private final static int[][] pHeight = {
 			{2},
 			{4,1},
 			{3,2,3,2},
@@ -65,7 +62,7 @@ public class State {
 			{2,3},
 			{2,3}
 	};
-	private static int[][][] pBottom = {
+	private final static int[][][] pBottom = {
 		{{0,0}},
 		{{0},{0,0,0,0}},
 		{{0,0},{0,1,1},{2,0},{0,0,0}},
@@ -74,7 +71,7 @@ public class State {
 		{{0,0,1},{1,0}},
 		{{1,0,0},{0,1}}
 	};
-	private static int[][][] pTop = {
+	private final static int[][][] pTop = {
 		{{2,2}},
 		{{4},{1,1,1,1}},
 		{{3,1},{2,2,2},{3,3},{1,1,2}},
@@ -156,22 +153,33 @@ public class State {
 		return turn;
 	}
 	
-	
-	
-	//constructor
+	private List<Integer> pieceList;
+	private int pieceIndex = 0;
+    private static boolean REPLAY_MODE = true;
+    
+    //constructor
 	public State() {
 		nextPiece = randomPiece();
-
+		pieceList = null;
+	}
+	
+	public State(List<Integer> pieceSeq) {
+	    pieceList = new ArrayList<Integer>();
+	    pieceList.addAll(pieceSeq);
+	    pieceIndex = 0;
+	    nextPiece = randomPiece();
 	}
 	
 	//random integer, returns 0-6
 	private int randomPiece() {
-		return (int)(Math.random()*N_PIECES);
+	    if (REPLAY_MODE && pieceList != null) {
+    		if (pieceIndex < pieceList.size()) {
+    		    return pieceList.get(pieceIndex++);
+    		} else return (int)(Math.random()*N_PIECES);
+	    } 
+	    return (int)(Math.random()*N_PIECES);
 	}
-	
-
-
-	
+		
 	//gives legal moves for 
 	public int[][] legalMoves() {
 		return legalMoves[nextPiece];
@@ -193,8 +201,10 @@ public class State {
 		//height if the first column makes contact
 		int height = top[slot]-pBottom[nextPiece][orient][0];
 		//for each column beyond the first in the piece
+		//System.out.println(top[slot] + " " + pBottom[nextPiece][orient][0]);
 		for(int c = 1; c < pWidth[nextPiece][orient];c++) {
 			height = Math.max(height,top[slot+c]-pBottom[nextPiece][orient][c]);
+			//System.out.println(height);
 		}
 		
 		//check if game ended
@@ -209,7 +219,8 @@ public class State {
 			
 			//from bottom to top of brick
 			for(int h = height+pBottom[nextPiece][orient][i]; h < height+pTop[nextPiece][orient][i]; h++) {
-				field[h][i+slot] = turn;
+				//System.out.println(height+" "+pBottom[nextPiece][orient][i]+" "+(i+slot));
+			    field[h][i+slot] = turn;
 			}
 		}
 		
@@ -217,8 +228,6 @@ public class State {
 		for(int c = 0; c < pWidth[nextPiece][orient]; c++) {
 			top[slot+c]=height+pTop[nextPiece][orient][c];
 		}
-		
-		int rowsCleared = 0;
 		
 		//check for full rows - starting at the top
 		for(int r = height+pHeight[nextPiece][orient]-1; r >= height; r--) {
@@ -232,7 +241,6 @@ public class State {
 			}
 			//if the row was full - remove it and slide above stuff down
 			if(full) {
-				rowsCleared++;
 				cleared++;
 				//for each column
 				for(int c = 0; c < COLS; c++) {
